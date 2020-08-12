@@ -256,7 +256,7 @@ void Map::moveCreature(Creature& creature, Tile& newTile, bool forceTeleport/* =
 	const Position& oldPos = oldTile.getPosition();
 	const Position& newPos = newTile.getPosition();
 
-	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
+	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 1>(oldPos, newPos);
 
 	SpectatorVector spectators;
 	if (!teleport) {
@@ -818,7 +818,7 @@ bool Map::getPathMatching(const Creature& creature, const Position& targetPos, s
 	const int_fast32_t sY = std::abs(targetPos.getY() - pos.getY());
 
 	AStarNode* found = nullptr;
-	while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100) {
+	do {
 		AStarNode* n = nodes.getBestNode();
 		if (!n) {
 			if (found) {
@@ -878,14 +878,12 @@ bool Map::getPathMatching(const Creature& creature, const Position& targetPos, s
 			pos.x = x + *neighbors++;
 			pos.y = y + *neighbors++;
 
-			const Tile* tile;
 			int_fast32_t extraCost;
 			AStarNode* neighborNode = nodes.getNodeByPosition(pos.x, pos.y);
 			if (neighborNode) {
-				tile = getTile(pos.x, pos.y, pos.z);
 				extraCost = neighborNode->c;
 			} else {
-				tile = Map::canWalkTo(creature, pos);
+				const Tile* tile = Map::canWalkTo(creature, pos);
 				if (!tile) {
 					continue;
 				}
@@ -916,7 +914,7 @@ bool Map::getPathMatching(const Creature& creature, const Position& targetPos, s
 			}
 		}
 		nodes.closeNode(n);
-	}
+	} while (nodes.getClosedNodes() < 100);
 	if (!found) {
 		return false;
 	}
@@ -989,7 +987,7 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 	const int_fast32_t sY = std::abs(targetPos.getY() - pos.getY());
 
 	AStarNode* found = nullptr;
-	while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100) {
+	do {
 		AStarNode* n = nodes.getBestNode();
 		if (!n) {
 			if (found) {
@@ -1056,14 +1054,12 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 				continue;
 			}
 
-			const Tile* tile;
 			int_fast32_t extraCost;
 			AStarNode* neighborNode = nodes.getNodeByPosition(pos.x, pos.y);
 			if (neighborNode) {
-				tile = getTile(pos.x, pos.y, pos.z);
 				extraCost = neighborNode->c;
 			} else {
-				tile = Map::canWalkTo(creature, pos);
+				const Tile* tile = Map::canWalkTo(creature, pos);
 				if (!tile) {
 					continue;
 				}
@@ -1094,7 +1090,7 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 			}
 		}
 		nodes.closeNode(n);
-	}
+	} while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100);
 
 	if (!found) {
 		return false;
@@ -1140,13 +1136,26 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 }
 
 // AStarNodes
-AStarNodes::AStarNodes(uint32_t x, uint32_t y, int_fast32_t extraCost): nodes(), openNodes()
+AStarNodes::AStarNodes(uint32_t x, uint32_t y, int_fast32_t extraCost): openNodes()
 {
-	#if defined(__SSE2__)
-	uint32_t defaultCost = std::numeric_limits<int32_t>::max();
-	for (int32_t i = 0; i < 512; ++i) {
-		memcpy(&calculatedNodes[i], &defaultCost, sizeof(calculatedNodes[0]));
+	#if defined(__AVX2__)
+	__m256i defaultCost = _mm256_set1_epi32(std::numeric_limits<int32_t>::max());
+	for (int32_t i = 0; i < MAX_NODES; i += 32) {
+		_mm256_stream_si256(reinterpret_cast<__m256i*>(&calculatedNodes[i + 0]), defaultCost);
+		_mm256_stream_si256(reinterpret_cast<__m256i*>(&calculatedNodes[i + 8]), defaultCost);
+		_mm256_stream_si256(reinterpret_cast<__m256i*>(&calculatedNodes[i + 16]), defaultCost);
+		_mm256_stream_si256(reinterpret_cast<__m256i*>(&calculatedNodes[i + 24]), defaultCost);
 	}
+	_mm_sfence();
+	#elif defined(__SSE2__)
+	__m128i defaultCost = _mm_set1_epi32(std::numeric_limits<int32_t>::max());
+	for (int32_t i = 0; i < MAX_NODES; i += 16) {
+		_mm_stream_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 0]), defaultCost);
+		_mm_stream_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 4]), defaultCost);
+		_mm_stream_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 8]), defaultCost);
+		_mm_stream_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 12]), defaultCost);
+	}
+	_mm_sfence();
 	#endif
 
 	curNode = 1;
@@ -1184,7 +1193,7 @@ bool AStarNodes::createOpenNode(AStarNode* parent, uint32_t x, uint32_t y, int_f
 	node.c = extraCost;
 	nodesTable[retNode] = (x << 16) | y;
 	#if defined(__SSE2__)
-	calculatedNodes[retNode] = f + node.g;
+	calculatedNodes[retNode] = f + heuristic;
 	#endif
 	return true;
 }
@@ -1229,18 +1238,14 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm256_min_epi32(values, minvalues);
 	}
 
-	alignas(32) int32_t values_array[8];
+	__m256i res = _mm256_min_epi32(minvalues, _mm256_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm256_min_epi32(res, _mm256_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+	res = _mm256_min_epi32(res, _mm256_permutevar8x32_epi32(res, _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7))); //Calculate horizontal minimum
+
 	alignas(32) int32_t indices_array[8];
-	_mm256_store_si256(reinterpret_cast<__m256i*>(values_array), minvalues);
 	_mm256_store_si256(reinterpret_cast<__m256i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 8; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm256_movemask_epi8(_mm256_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#elif defined(__SSE4_1__)
 	const __m128i increment = _mm_set1_epi32(4);
@@ -1254,18 +1259,13 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm_min_epi32(values, minvalues);
 	}
 
-	alignas(16) int32_t values_array[4];
+	__m128i res = _mm_min_epi32(minvalues, _mm_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm_min_epi32(res, _mm_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+
 	alignas(16) int32_t indices_array[4];
-	_mm_store_si128(reinterpret_cast<__m128i*>(values_array), minvalues);
 	_mm_store_si128(reinterpret_cast<__m128i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 4; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm_movemask_epi8(_mm_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#elif defined(__SSE2__)
 	auto _mm_sse2_min_epi32 = [](const __m128i a, const __m128i b) {
@@ -1289,18 +1289,13 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm_sse2_min_epi32(values, minvalues);
 	}
 
-	alignas(16) int32_t values_array[4];
+	__m128i res = _mm_sse2_min_epi32(minvalues, _mm_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm_sse2_min_epi32(res, _mm_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+
 	alignas(16) int32_t indices_array[4];
-	_mm_store_si128(reinterpret_cast<__m128i*>(values_array), minvalues);
 	_mm_store_si128(reinterpret_cast<__m128i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 4; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm_movemask_epi8(_mm_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#else
 	int32_t best_node_f = std::numeric_limits<int32_t>::max();

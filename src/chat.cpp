@@ -22,7 +22,6 @@
 #include "chat.h"
 #include "game.h"
 #include "pugicast.h"
-#include "scheduler.h"
 
 extern Chat* g_chat;
 extern Game g_game;
@@ -47,13 +46,13 @@ void PrivateChatChannel::invitePlayer(const Player& player, Player& invitePlayer
 		return;
 	}
 
-	std::ostringstream ss;
+	std::stringExtended ss(NETWORKMESSAGE_PLAYERNAME_MAXLENGTH + 42);
 	ss << player.getName() << " invites you to " << (player.getSex() == PLAYERSEX_FEMALE ? "her" : "his") << " private chat channel.";
-	invitePlayer.sendTextMessage(MESSAGE_INFO_DESCR, ss.str());
+	invitePlayer.sendTextMessage(MESSAGE_INFO_DESCR, ss);
 
-	ss.str(std::string());
+	ss.clear();
 	ss << invitePlayer.getName() << " has been invited.";
-	player.sendTextMessage(MESSAGE_INFO_DESCR, ss.str());
+	player.sendTextMessage(MESSAGE_INFO_DESCR, ss);
 
 	#if GAME_FEATURE_CHAT_PLAYERLIST > 0
 	for (const auto& it : users) {
@@ -70,9 +69,9 @@ void PrivateChatChannel::excludePlayer(const Player& player, Player& excludePlay
 
 	removeUser(excludePlayer);
 
-	std::ostringstream ss;
+	std::stringExtended ss(NETWORKMESSAGE_PLAYERNAME_MAXLENGTH + 32);
 	ss << excludePlayer.getName() << " has been excluded.";
-	player.sendTextMessage(MESSAGE_INFO_DESCR, ss.str());
+	player.sendTextMessage(MESSAGE_INFO_DESCR, ss);
 
 	excludePlayer.sendClosePrivate(id);
 
@@ -104,7 +103,7 @@ bool ChatChannel::addUser(Player& player)
 	if (id == CHANNEL_GUILD) {
 		Guild* guild = player.getGuild();
 		if (guild && !guild->getMotd().empty()) {
-			g_scheduler.addEvent(createSchedulerTask(150, std::bind(&Game::sendGuildMotd, &g_game, player.getID())));
+			g_dispatcher.addEvent(150, std::bind(&Game::sendGuildMotd, &g_game, player.getID()));
 		}
 	}
 

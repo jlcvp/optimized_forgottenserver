@@ -43,7 +43,6 @@ class Weapon;
 class ProtocolGame;
 class Npc;
 class Party;
-class SchedulerTask;
 class Bed;
 class Guild;
 
@@ -405,6 +404,25 @@ class Player final : public Creature, public Cylinder
 			return inMarket;
 		}
 		#endif
+		#if GAME_FEATURE_STASH > 0
+		void setSupplyStashAvailable(bool value) {
+			supplyStashAvailable = value;
+		}
+		bool isSupplyStashAvailable() const {
+			return supplyStashAvailable;
+		}
+		void setMarketAvailable(bool value) {
+			marketAvailable = value;
+		}
+		bool isMarketAvailable() const {
+			return marketAvailable;
+		}
+
+		size_t getStashItemCount() const {return stashItems.size();}
+		uint32_t getStashItemCount(uint16_t itemId) const;
+		bool addStashItem(uint16_t itemId, uint32_t itemCount);
+		bool removeStashItem(uint16_t itemId, uint32_t itemCount);
+		#endif
 
 		void setLastDepotId(int16_t newId) {
 			lastDepotId = newId;
@@ -620,7 +638,7 @@ class Player final : public Creature, public Cylinder
 		void onWalkComplete() override;
 
 		void stopWalk();
-		void openShopWindow(Npc* npc, const std::vector<ShopInfo>& shop);
+		void openShopWindow(Npc* npc, std::vector<ShopInfo>& shop);
 		bool closeShopWindow(bool sendCloseShopWindow = true);
 		bool updateSaleShopList(const Item* item);
 		bool hasShopItemForSale(uint32_t itemId, uint8_t subType) const;
@@ -1174,6 +1192,18 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		#endif
+		#if GAME_FEATURE_STASH > 0
+		void sendSupplyStash() {
+			if (client) {
+				client->sendSupplyStash(stashItems);
+			}
+		}
+		void sendSpecialContainersAvailable(bool supplyStashAvailable, bool marketAvailable) {
+			if (client) {
+				client->sendSpecialContainersAvailable(supplyStashAvailable, marketAvailable);
+			}
+		}
+		#endif
 		#if GAME_FEATURE_INSPECTION > 0
 		void sendItemInspection(uint16_t itemId, uint8_t itemCount, const Item* item, bool cyclopedia) {
 			if (client) {
@@ -1387,9 +1417,12 @@ class Player final : public Creature, public Cylinder
 
 		void updateInventoryWeight();
 
-		void setNextWalkActionTask(SchedulerTask* task);
-		void setNextWalkTask(SchedulerTask* task);
-		void setNextActionTask(SchedulerTask* task);
+		void stopNextWalkActionTask();
+		void stopNextWalkTask();
+		void stopNextActionTask();
+		void setNextWalkActionTask(uint32_t delay, std::function<void (void)> f);
+		void setNextWalkTask(uint32_t delay, std::function<void (void)> f);
+		void setNextActionTask(uint32_t delay, std::function<void (void)> f);
 
 		void death(Creature* lastHitCreature) override;
 		bool dropCorpse(Creature* lastHitCreature, Creature* mostDamageCreature, bool lastHitUnjustified, bool mostDamageUnjustified) override;
@@ -1426,6 +1459,9 @@ class Player final : public Creature, public Cylinder
 		std::unordered_set<uint32_t> attackedSet;
 		std::unordered_set<uint32_t> VIPList;
 
+		#if GAME_FEATURE_STASH > 0
+		std::map<uint16_t, uint32_t> stashItems;
+		#endif
 		std::map<uint8_t, OpenContainer> openContainers;
 		std::map<uint32_t, DepotLocker*> depotLockerMap;
 		std::map<uint32_t, DepotChest*> depotChests;
@@ -1489,7 +1525,7 @@ class Player final : public Creature, public Cylinder
 		Party* party = nullptr;
 		Player* tradePartner = nullptr;
 		ProtocolGame_ptr client;
-		SchedulerTask* walkTask = nullptr;
+		std::pair<uint32_t, std::function<void (void)>>* walkTask = nullptr;
 		Town* town = nullptr;
 		Vocation* vocation = nullptr;
 
@@ -1554,6 +1590,10 @@ class Player final : public Creature, public Cylinder
 		bool addAttackSkillPoint = false;
 		bool inventoryAbilities[CONST_SLOT_LAST + 1] = {};
 		bool scheduledUpdate = false;
+		#if GAME_FEATURE_STASH > 0
+		bool supplyStashAvailable = false;
+		bool marketAvailable = false;
+		#endif
 
 		static uint32_t playerAutoID;
 

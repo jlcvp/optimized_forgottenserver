@@ -31,7 +31,6 @@
 #include "iologindata.h"
 #include "monster.h"
 #include "movement.h"
-#include "scheduler.h"
 #include "weapons.h"
 
 extern ConfigManager g_config;
@@ -126,62 +125,61 @@ bool Player::isPushable() const
 
 std::string Player::getDescription(int32_t lookDistance) const
 {
-	std::string sink;
-	sink.reserve(512);
+	std::stringExtended sink(512);
 
 	if (lookDistance == -1) {
-		sink.append("yourself.");
+		sink << "yourself.";
 
 		if (group->access) {
-			sink.append(" You are ").append(group->name).append(1, '.');
+			sink << " You are " << group->name << '.';
 		} else if (vocation->getId() != VOCATION_NONE) {
-			sink.append(" You are ").append(vocation->getVocDescription()).append(1, '.');
+			sink << " You are " << vocation->getVocDescription() << '.';
 		} else {
-			sink.append(" You have no vocation.");
+			sink << " You have no vocation.";
 		}
 	} else {
-		sink.append(name);
+		sink << name;
 		if (!group->access) {
-			sink.append(" (Level ").append(std::to_string(level)).append(1, ')');
+			sink << " (Level " << level << ')';
 		}
-		sink.append(1, '.');
+		sink << '.';
 
 		if (sex == PLAYERSEX_FEMALE) {
-			sink.append(" She");
+			sink << " She";
 		} else {
-			sink.append(" He");
+			sink << " He";
 		}
 
 		if (group->access) {
-			sink.append(" is ").append(group->name).append(1, '.');
+			sink << " is " << group->name << '.';
 		} else if (vocation->getId() != VOCATION_NONE) {
-			sink.append(" is ").append(vocation->getVocDescription()).append(1, '.');
+			sink << " is " << vocation->getVocDescription() << '.';
 		} else {
-			sink.append(" has no vocation.");
+			sink << " has no vocation.";
 		}
 	}
 
 	if (party) {
 		if (lookDistance == -1) {
-			sink.append(" Your party has ");
+			sink << " Your party has ";
 		} else if (sex == PLAYERSEX_FEMALE) {
-			sink.append(" She is in a party with ");
+			sink << " She is in a party with ";
 		} else {
-			sink.append(" He is in a party with ");
+			sink << " He is in a party with ";
 		}
 
 		size_t memberCount = party->getMemberCount() + 1;
 		if (memberCount == 1) {
-			sink.append("1 member and ");
+			sink << "1 member and ";
 		} else {
-			sink.append(std::to_string(memberCount)).append(" members and ");
+			sink << memberCount << " members and ";
 		}
 
 		size_t invitationCount = party->getInvitationCount();
 		if (invitationCount == 1) {
-			sink.append("1 pending invitation.");
+			sink << "1 pending invitation.";
 		} else {
-			sink.append(std::to_string(invitationCount)).append(" pending invitations.");
+			sink << invitationCount << " pending invitations.";
 		}
 	}
 
@@ -190,23 +188,23 @@ std::string Player::getDescription(int32_t lookDistance) const
 	}
 
 	if (lookDistance == -1) {
-		sink.append(" You are ");
+		sink << " You are ";
 	} else if (sex == PLAYERSEX_FEMALE) {
-		sink.append(" She is ");
+		sink << " She is ";
 	} else {
-		sink.append(" He is ");
+		sink << " He is ";
 	}
 
-	sink.append(guildRank->name).append(" of the ").append(guild->getName());
+	sink << guildRank->name << " of the " << guild->getName();
 	if (!guildNick.empty()) {
-		sink.append(" (").append(guildNick).append(1, ')');
+		sink << " (" << guildNick << ')';
 	}
 
 	size_t memberCount = guild->getMemberCount();
 	if (memberCount == 1) {
-		sink.append(", which has 1 member, ").append(std::to_string(guild->getMembersOnline().size())).append(" of them online.");
+		sink << ", which has 1 member, " << guild->getMembersOnline().size() << " of them online.";
 	} else {
-		sink.append(", which has ").append(std::to_string(memberCount)).append(" members, ").append(std::to_string(guild->getMembersOnline().size())).append(" of them online.");
+		sink << ", which has " << memberCount << " members, " << guild->getMembersOnline().size() << " of them online.";
 	}
 	return sink;
 }
@@ -481,9 +479,9 @@ void Player::addSkillAdvance(skills_t skill, uint64_t count)
 		skills[skill].tries = 0;
 		skills[skill].percent = 0;
 
-		std::ostringstream ss;
+		std::stringExtended ss(128);
 		ss << "You advanced to " << getSkillName(skill) << " level " << skills[skill].level << '.';
-		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 
 		g_creatureEvents->playerAdvance(this, skill, (skills[skill].level - 1), skills[skill].level);
 
@@ -900,6 +898,9 @@ DepotLocker* Player::getDepotLocker(uint32_t depotId)
 	#if GAME_FEATURE_MARKET > 0
 	depotLocker->internalAddThing(Item::CreateItem(ITEM_MARKET));
 	depotLocker->internalAddThing(inbox);
+	#endif
+	#if GAME_FEATURE_STASH > 0
+	depotLocker->internalAddThing(Item::CreateItem(ITEM_SUPPLY_STASH));
 	#endif
 	depotLocker->internalAddThing(getDepotChest(depotId, true));
 	depotLockerMap[depotId] = depotLocker;
@@ -1322,7 +1323,7 @@ void Player::onRemoveCreature(Creature* creature, bool isLogout)
 	}
 }
 
-void Player::openShopWindow(Npc* npc, const std::vector<ShopInfo>& shop)
+void Player::openShopWindow(Npc* npc, std::vector<ShopInfo>& shop)
 {
 	shopItemList = std::move(shop);
 	sendShop(npc);
@@ -1355,7 +1356,7 @@ bool Player::closeShopWindow(bool sendCloseShopWindow /*= true*/)
 void Player::onWalk(Direction& dir)
 {
 	Creature::onWalk(dir);
-	setNextActionTask(nullptr);
+	stopNextActionTask();
 	setNextAction(OTSYS_TIME() + getStepDuration(dir));
 }
 
@@ -1524,46 +1525,56 @@ void Player::checkTradeState(const Item* item)
 	}
 }
 
-void Player::setNextWalkActionTask(SchedulerTask* task)
+void Player::stopNextWalkActionTask()
 {
 	if (walkTaskEvent != 0) {
-		g_scheduler.stopEvent(walkTaskEvent);
+		g_dispatcher.stopEvent(walkTaskEvent);
 		walkTaskEvent = 0;
 	}
 
 	delete walkTask;
-	walkTask = task;
+	walkTask = nullptr;
 }
 
-void Player::setNextWalkTask(SchedulerTask* task)
+void Player::stopNextWalkTask()
 {
 	if (nextStepEvent != 0) {
-		g_scheduler.stopEvent(nextStepEvent);
+		g_dispatcher.stopEvent(nextStepEvent);
 		nextStepEvent = 0;
-	}
-
-	if (task) {
-		nextStepEvent = g_scheduler.addEvent(task);
-		resetIdleTime();
 	}
 }
 
-void Player::setNextActionTask(SchedulerTask* task)
+void Player::stopNextActionTask()
 {
 	if (actionTaskEvent != 0) {
-		g_scheduler.stopEvent(actionTaskEvent);
+		g_dispatcher.stopEvent(actionTaskEvent);
 		actionTaskEvent = 0;
 	}
+}
 
-	if (task) {
-		actionTaskEvent = g_scheduler.addEvent(task);
-		resetIdleTime();
-	}
+void Player::setNextWalkActionTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextWalkActionTask();
+	walkTask = new std::pair<uint32_t, std::function<void (void)>>(delay, std::move(f));
+}
+
+void Player::setNextWalkTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextWalkTask();
+	nextStepEvent = g_dispatcher.addEvent(delay, std::move(f));
+	resetIdleTime();
+}
+
+void Player::setNextActionTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextActionTask();
+	actionTaskEvent = g_dispatcher.addEvent(delay, std::move(f));
+	resetIdleTime();
 }
 
 uint32_t Player::getNextActionTime() const
 {
-	return std::max<int64_t>(SCHEDULER_MINTICKS, nextAction - OTSYS_TIME());
+	return std::max<int64_t>(SERVER_BEAT_MILISECONDS, nextAction - OTSYS_TIME());
 }
 
 void Player::onThink(uint32_t interval)
@@ -1584,9 +1595,9 @@ void Player::onThink(uint32_t interval)
 		if (idleTime > (kickAfterMinutes * 60000) + 60000) {
 			kickPlayer(true);
 		} else if (client && idleTime == 60000 * kickAfterMinutes) {
-			std::ostringstream ss;
+			std::stringExtended ss(128);
 			ss << "You have been idle for " << kickAfterMinutes << " minutes. You will be disconnected in one minute if you are still idle then.";
-			client->sendTextMessage(TextMessage(MESSAGE_STATUS_WARNING, ss.str()));
+			client->sendTextMessage(TextMessage(MESSAGE_STATUS_WARNING, ss));
 		}
 	}
 
@@ -1642,9 +1653,9 @@ void Player::removeMessageBuffer()
 			Condition* condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_MUTED, muteTime * 1000, 0);
 			addCondition(condition);
 
-			std::ostringstream ss;
+			std::stringExtended ss(64);
 			ss << "You are muted for " << muteTime << " seconds.";
-			sendTextMessage(MESSAGE_STATUS_SMALL, ss.str());
+			sendTextMessage(MESSAGE_STATUS_SMALL, ss);
 		}
 	}
 }
@@ -1692,9 +1703,9 @@ void Player::addManaSpent(uint64_t amount)
 		magLevel++;
 		manaSpent = 0;
 
-		std::ostringstream ss;
+		std::stringExtended ss(64);
 		ss << "You advanced to magic level " << magLevel << '.';
-		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 
 		g_creatureEvents->playerAdvance(this, SKILL_MAGLEVEL, magLevel - 1, magLevel);
 
@@ -1786,8 +1797,6 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 		mana = manaMax;
 
 		updateBaseSpeed();
-		setBaseSpeed(getBaseSpeed());
-
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
 		#if GAME_FEATURE_PARTY_LIST > 0
@@ -1807,9 +1816,9 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 
 		g_creatureEvents->playerAdvance(this, SKILL_LEVEL, prevLevel, level);
 
-		std::ostringstream ss;
+		std::stringExtended ss(64);
 		ss << "You advanced from Level " << prevLevel << " to Level " << level << '.';
-		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 	}
 
 	if (nextLevelExp > currLevelExp) {
@@ -1873,8 +1882,6 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 		mana = manaMax;
 
 		updateBaseSpeed();
-		setBaseSpeed(getBaseSpeed());
-
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
 		#if GAME_FEATURE_PARTY_LIST > 0
@@ -1892,9 +1899,9 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 			party->updateSharedExperience();
 		}
 
-		std::ostringstream ss;
+		std::stringExtended ss(64);
 		ss << "You were downgraded from Level " << oldLevel << " to Level " << level << '.';
-		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+		sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 	}
 
 	uint64_t nextLevelExp = Player::getExpForLevel(level + 1);
@@ -2156,9 +2163,9 @@ void Player::death(Creature* lastHitCreature)
 			}
 
 			if (oldLevel != level) {
-				std::ostringstream ss;
+				std::stringExtended ss(64);
 				ss << "You were downgraded from Level " << oldLevel << " to Level " << level << '.';
-				sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+				sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 			}
 
 			uint64_t currLevelExp = Player::getExpForLevel(level);
@@ -2240,14 +2247,14 @@ Item* Player::getCorpse(Creature* lastHitCreature, Creature* mostDamageCreature)
 {
 	Item* corpse = Creature::getCorpse(lastHitCreature, mostDamageCreature);
 	if (corpse && corpse->getContainer()) {
-		std::ostringstream ss;
+		std::stringExtended ss(getNameDescription().length() + static_cast<size_t>(64));
 		if (lastHitCreature) {
 			ss << "You recognize " << getNameDescription() << ". " << (getSex() == PLAYERSEX_FEMALE ? "She" : "He") << " was killed by " << lastHitCreature->getNameDescription() << '.';
 		} else {
 			ss << "You recognize " << getNameDescription() << '.';
 		}
 
-		corpse->setSpecialDescription(ss.str());
+		corpse->setSpecialDescription(ss);
 	}
 	return corpse;
 }
@@ -3400,11 +3407,10 @@ void Player::doAttacking(uint32_t)
 			result = Weapon::useFist(this, attackedCreature);
 		}
 
-		SchedulerTask* task = createSchedulerTask(std::max<uint32_t>(SCHEDULER_MINTICKS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		if (!classicSpeed) {
-			setNextActionTask(task);
+			setNextActionTask(std::max<uint32_t>(SERVER_BEAT_MILISECONDS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		} else {
-			g_scheduler.addEvent(task);
+			g_dispatcher.addEvent(std::max<uint32_t>(SERVER_BEAT_MILISECONDS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		}
 
 		if (result) {
@@ -3451,14 +3457,14 @@ void Player::setChaseMode(bool mode)
 
 void Player::onWalkAborted()
 {
-	setNextWalkActionTask(nullptr);
+	stopNextWalkActionTask();
 	sendCancelWalk();
 }
 
 void Player::onWalkComplete()
 {
 	if (walkTask) {
-		walkTaskEvent = g_scheduler.addEvent(walkTask);
+		walkTaskEvent = g_dispatcher.addEvent(walkTask->first, std::move(walkTask->second));
 		walkTask = nullptr;
 	}
 }
@@ -3981,14 +3987,6 @@ Skulls_t Player::getSkullClient(const Creature* creature) const
 		return Creature::getSkullClient(creature);
 	}
 
-	if (isInWar(player)) {
-		return SKULL_GREEN;
-	}
-
-	if (!player->getGuildWarVector().empty() && guild == player->getGuild()) {
-		return SKULL_GREEN;
-	}
-
 	if (player->hasAttacked(this)) {
 		return SKULL_YELLOW;
 	}
@@ -4131,6 +4129,48 @@ bool Player::hasLearnedInstantSpell(const std::string& spellName) const
 	}
 	return false;
 }
+
+#if GAME_FEATURE_STASH > 0
+uint32_t Player::getStashItemCount(uint16_t itemId) const
+{
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		return it->second;
+	}
+	return 0;
+}
+
+bool Player::addStashItem(uint16_t itemId, uint32_t itemCount)
+{
+	// just in-case check for possible overflow
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		if (it->second > std::numeric_limits<decltype(itemCount)>::max() - itemCount) {
+			return false; // overflow
+		} else {
+			it->second += itemCount;
+			return true;
+		}
+	}
+	stashItems[itemId] = itemCount;
+	return true;
+}
+
+bool Player::removeStashItem(uint16_t itemId, uint32_t itemCount)
+{
+	auto it = stashItems.find(itemId);
+	if (it != stashItems.end()) {
+		if (it->second == itemCount) {
+			stashItems.erase(it);
+			return true;
+		} else if (it->second > itemCount) {
+			it->second -= itemCount;
+			return true;
+		}
+	}
+	return false;
+}
+#endif
 
 bool Player::isInWar(const Player* player) const
 {
@@ -4522,9 +4562,9 @@ bool Player::addOfflineTrainingTries(skills_t skill, uint64_t tries)
 		manaSpent += tries;
 
 		if (magLevel != currMagLevel) {
-			std::ostringstream ss;
+			std::stringExtended ss(64);
 			ss << "You advanced to magic level " << magLevel << '.';
-			sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+			sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 		}
 
 		uint8_t newPercent;
@@ -4577,9 +4617,9 @@ bool Player::addOfflineTrainingTries(skills_t skill, uint64_t tries)
 		skills[skill].tries += tries;
 
 		if (currSkillLevel != skills[skill].level) {
-			std::ostringstream ss;
+			std::stringExtended ss(128);
 			ss << "You advanced to " << getSkillName(skill) << " level " << skills[skill].level << '.';
-			sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+			sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 		}
 
 		uint8_t newPercent;
@@ -4603,9 +4643,17 @@ bool Player::addOfflineTrainingTries(skills_t skill, uint64_t tries)
 		addScheduledUpdates(PlayerUpdate_Skills);
 	}
 
-	std::ostringstream ss;
-	ss << std::fixed << std::setprecision(2) << "Your " << ucwords(getSkillName(skill)) << " skill changed from level " << oldSkillValue << " (with " << oldPercentToNextLevel << "% progress towards level " << (oldSkillValue + 1) << ") to level " << newSkillValue << " (with " << newPercentToNextLevel << "% progress towards level " << (newSkillValue + 1) << ')';
-	sendTextMessage(MESSAGE_EVENT_ADVANCE, ss.str());
+	// change to int with 2-decimal precision
+	int64_t oldPercentToNextLevel_U64 = static_cast<int64_t>(oldPercentToNextLevel * 100.0);
+	int64_t newPercentToNextLevel_U64 = static_cast<int64_t>(newPercentToNextLevel * 100.0);
+
+	std::stringExtended ss(256);
+	ss << "Your " << ucwords(getSkillName(skill)) << " skill changed from level " << oldSkillValue << " (with " << oldPercentToNextLevel_U64;
+	ss.insert(ss.end() - 2, '.'); // add comma to fixed-precision percentage
+	ss << "% progress towards level " << (oldSkillValue + 1) << ") to level " << newSkillValue << " (with " << newPercentToNextLevel_U64;
+	ss.insert(ss.end() - 2, '.'); // add comma to fixed-precision percentage
+	ss << "% progress towards level " << (newSkillValue + 1) << ')';
+	sendTextMessage(MESSAGE_EVENT_ADVANCE, ss);
 	return sendUpdate;
 }
 
@@ -4791,7 +4839,7 @@ void Player::addScheduledUpdates(uint32_t flags)
 {
 	scheduledUpdates |= flags;
 	if (!scheduledUpdate) {
-		g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&Game::updatePlayerEvent, &g_game, getID())));
+		g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&Game::updatePlayerEvent, &g_game, getID()));
 		scheduledUpdate = true;
 	}
 }

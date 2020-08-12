@@ -33,7 +33,6 @@
 #include "databasemanager.h"
 #include "bed.h"
 #include "monster.h"
-#include "scheduler.h"
 #include "databasetasks.h"
 #include "movement.h"
 #include "globalevent.h"
@@ -1110,6 +1109,299 @@ void LuaScriptInterface::registerFunctions()
 	//registerEnum(value)
 	//registerEnumIn(tableName, value)
 
+	// Features
+	#if GAME_FEATURE_RULEVIOLATION > 0
+	registerEnum(GAME_FEATURE_RULEVIOLATION)
+	#endif
+	#if GAME_FEATURE_XTEA > 0
+	registerEnum(GAME_FEATURE_XTEA)
+	#endif
+	#if GAME_FEATURE_RSA1024 > 0
+	registerEnum(GAME_FEATURE_RSA1024)
+	#endif
+	#if GAME_FEATURE_MESSAGE_STATEMENT > 0
+	registerEnum(GAME_FEATURE_MESSAGE_STATEMENT)
+	#endif
+	#if GAME_FEATURE_LOOKTYPE_U16 > 0
+	registerEnum(GAME_FEATURE_LOOKTYPE_U16)
+	#endif
+	#if GAME_FEATURE_NEWFLUIDS > 0
+	registerEnum(GAME_FEATURE_NEWFLUIDS)
+	#endif
+	#if GAME_FEATURE_MESSAGE_LEVEL > 0
+	registerEnum(GAME_FEATURE_MESSAGE_LEVEL)
+	#endif
+	#if GAME_FEATURE_PLAYERICONS_U16 > 0
+	registerEnum(GAME_FEATURE_PLAYERICONS_U16)
+	#endif
+	#if GAME_FEATURE_ADDONS > 0
+	registerEnum(GAME_FEATURE_ADDONS)
+	#endif
+	#if GAME_FEATURE_STAMINA > 0
+	registerEnum(GAME_FEATURE_STAMINA)
+	#endif
+	#if GAME_FEATURE_OUTFITS > 0
+	registerEnum(GAME_FEATURE_OUTFITS)
+	#endif
+	#if GAME_FEATURE_WRITABLE_DATE > 0
+	registerEnum(GAME_FEATURE_WRITABLE_DATE)
+	#endif
+	#if GAME_FEATURE_NPC_INTERFACE > 0
+	registerEnum(GAME_FEATURE_NPC_INTERFACE)
+	#endif
+	#if GAME_FEATURE_ADLER32_CHECKSUM > 0
+	registerEnum(GAME_FEATURE_ADLER32_CHECKSUM)
+	#endif
+	#if GAME_FEATURE_ACCOUNT_NAME > 0
+	registerEnum(GAME_FEATURE_ACCOUNT_NAME)
+	#endif
+	#if GAME_FEATURE_DOUBLE_CAPACITY > 0
+	registerEnum(GAME_FEATURE_DOUBLE_CAPACITY)
+	#endif
+	#if GAME_FEATURE_SERVER_SENDFIRST > 0
+	registerEnum(GAME_FEATURE_SERVER_SENDFIRST)
+	#endif
+	#if GAME_FEATURE_TILE_ADDTHING_STACKPOS > 0
+	registerEnum(GAME_FEATURE_TILE_ADDTHING_STACKPOS)
+	#endif
+	#if GAME_FEATURE_GUILD_EMBLEM > 0
+	registerEnum(GAME_FEATURE_GUILD_EMBLEM)
+	#endif
+	#if GAME_FEATURE_SERVER_LOG_DETAILS > 0
+	registerEnum(GAME_FEATURE_SERVER_LOG_DETAILS)
+	#endif
+	#if GAME_FEATURE_ATTACK_SEQUENCE > 0
+	registerEnum(GAME_FEATURE_ATTACK_SEQUENCE)
+	#endif
+	#if GAME_FEATURE_DEATH_PENALTY > 0
+	registerEnum(GAME_FEATURE_DEATH_PENALTY)
+	#endif
+	#if GAME_FEATURE_MOUNTS > 0
+	registerEnum(GAME_FEATURE_MOUNTS)
+	#endif
+	#if GAME_FEATURE_DOUBLE_EXPERIENCE > 0
+	registerEnum(GAME_FEATURE_DOUBLE_EXPERIENCE)
+	#endif
+	#if GAME_FEATURE_SPELL_LIST > 0
+	registerEnum(GAME_FEATURE_SPELL_LIST)
+	#endif
+	#if GAME_FEATURE_INVENTORY_LIST > 0
+	registerEnum(GAME_FEATURE_INVENTORY_LIST)
+	#endif
+	#if GAME_FEATURE_TOTAL_CAPACITY > 0
+	registerEnum(GAME_FEATURE_TOTAL_CAPACITY)
+	#endif
+	#if GAME_FEATURE_BASE_SKILLS > 0
+	registerEnum(GAME_FEATURE_BASE_SKILLS)
+	#endif
+	#if GAME_FEATURE_CHAT_PLAYERLIST > 0
+	registerEnum(GAME_FEATURE_CHAT_PLAYERLIST)
+	#endif
+	#if GAME_FEATURE_REGENERATION_TIME > 0
+	registerEnum(GAME_FEATURE_REGENERATION_TIME)
+	#endif
+	#if GAME_FEATURE_ITEM_ANIMATION_PHASES > 0
+	registerEnum(GAME_FEATURE_ITEM_ANIMATION_PHASES)
+	#endif
+	#if GAME_FEATURE_ENVIRONMENT_EFFECTS > 0
+	registerEnum(GAME_FEATURE_ENVIRONMENT_EFFECTS)
+	#endif
+	#if GAME_FEATURE_NPC_NAME_ON_TRADE > 0
+	registerEnum(GAME_FEATURE_NPC_NAME_ON_TRADE)
+	#endif
+	#if GAME_FEATURE_MARKET > 0
+	registerEnum(GAME_FEATURE_MARKET)
+	#endif
+	#if GAME_FEATURE_PING > 0
+	registerEnum(GAME_FEATURE_PING)
+	#endif
+	#if GAME_FEATURE_PURSE_SLOT > 0
+	registerEnum(GAME_FEATURE_PURSE_SLOT)
+	#endif
+	#if GAME_FEATURE_OFFLINE_TRAINING > 0
+	registerEnum(GAME_FEATURE_OFFLINE_TRAINING)
+	#endif
+	#if GAME_FEATURE_LOOKATCREATURE > 0
+	registerEnum(GAME_FEATURE_LOOKATCREATURE)
+	#endif
+	#if GAME_FEATURE_ADDITIONAL_VIPINFO > 0
+	registerEnum(GAME_FEATURE_ADDITIONAL_VIPINFO)
+	#endif
+	#if GAME_FEATURE_PREVIEW_STATE > 0
+	registerEnum(GAME_FEATURE_PREVIEW_STATE)
+	#endif
+	#if GAME_FEATURE_CLIENT_VERSION > 0
+	registerEnum(GAME_FEATURE_CLIENT_VERSION)
+	#endif
+	#if GAME_FEATURE_KEEP_CONNECTION_AFTER_DEATH > 0
+	registerEnum(GAME_FEATURE_KEEP_CONNECTION_AFTER_DEATH)
+	#endif
+	#if GAME_FEATURE_LOGIN_PENDING > 0
+	registerEnum(GAME_FEATURE_LOGIN_PENDING)
+	#endif
+	#if GAME_FEATURE_VIP_STATUS > 0
+	registerEnum(GAME_FEATURE_VIP_STATUS)
+	#endif
+	#if GAME_FEATURE_NEWSPEED_LAW > 0
+	registerEnum(GAME_FEATURE_NEWSPEED_LAW)
+	#endif
+	#if GAME_FEATURE_BROWSEFIELD > 0
+	registerEnum(GAME_FEATURE_BROWSEFIELD)
+	#endif
+	#if GAME_FEATURE_CONTAINER_PAGINATION > 0
+	registerEnum(GAME_FEATURE_CONTAINER_PAGINATION)
+	#endif
+	#if GAME_FEATURE_PVP_MODE > 0
+	registerEnum(GAME_FEATURE_PVP_MODE)
+	#endif
+	#if GAME_FEATURE_ITEM_MARK > 0
+	registerEnum(GAME_FEATURE_ITEM_MARK)
+	#endif
+	#if GAME_FEATURE_CREATURE_MARK > 0
+	registerEnum(GAME_FEATURE_CREATURE_MARK)
+	#endif
+	#if GAME_FEATURE_CREATURE_TYPE > 0
+	registerEnum(GAME_FEATURE_CREATURE_TYPE)
+	#endif
+	#if GAME_FEATURE_LOGIN_EXTENDED > 0
+	registerEnum(GAME_FEATURE_LOGIN_EXTENDED)
+	#endif
+	#if GAME_FEATURE_DOUBLE_SKILLS > 0
+	registerEnum(GAME_FEATURE_DOUBLE_SKILLS)
+	#endif
+	#if GAME_FEATURE_CREATURE_ICONS > 0
+	registerEnum(GAME_FEATURE_CREATURE_ICONS)
+	#endif
+	#if GAME_FEATURE_PREMIUM_EXPIRATION > 0
+	registerEnum(GAME_FEATURE_PREMIUM_EXPIRATION)
+	#endif
+	#if GAME_FEATURE_UNJUSTIFIED_POINTS > 0
+	registerEnum(GAME_FEATURE_UNJUSTIFIED_POINTS)
+	#endif
+	#if GAME_FEATURE_EXPERIENCE_BONUS > 0
+	registerEnum(GAME_FEATURE_EXPERIENCE_BONUS)
+	#endif
+	#if GAME_FEATURE_DEATH_TYPE > 0
+	registerEnum(GAME_FEATURE_DEATH_TYPE)
+	#endif
+	#if GAME_FEATURE_RENDER_INFORMATION > 0
+	registerEnum(GAME_FEATURE_RENDER_INFORMATION)
+	#endif
+	#if GAME_FEATURE_CONTENT_REVISION > 0
+	registerEnum(GAME_FEATURE_CONTENT_REVISION)
+	#endif
+	#if GAME_FEATURE_AUTHENTICATOR > 0
+	registerEnum(GAME_FEATURE_AUTHENTICATOR)
+	#endif
+	#if GAME_FEATURE_SESSIONKEY > 0
+	registerEnum(GAME_FEATURE_SESSIONKEY)
+	#endif
+	#if GAME_FEATURE_EQUIP_HOTKEY > 0
+	registerEnum(GAME_FEATURE_EQUIP_HOTKEY)
+	#endif
+	#if GAME_FEATURE_STORE > 0
+	registerEnum(GAME_FEATURE_STORE)
+	#endif
+	#if GAME_FEATURE_LOGIN_PREMIUM_TIMESTAMP > 0
+	registerEnum(GAME_FEATURE_LOGIN_PREMIUM_TIMESTAMP)
+	#endif
+	#if GAME_FEATURE_LOGIN_PREMIUM_TYPE > 0
+	registerEnum(GAME_FEATURE_LOGIN_PREMIUM_TYPE)
+	#endif
+	#if GAME_FEATURE_WRAPPABLE > 0
+	registerEnum(GAME_FEATURE_WRAPPABLE)
+	#endif
+	#if GAME_FEATURE_STORE_INBOX > 0
+	registerEnum(GAME_FEATURE_STORE_INBOX)
+	#endif
+	#if GAME_FEATURE_STORE_SERVICETYPE > 0
+	registerEnum(GAME_FEATURE_STORE_SERVICETYPE)
+	#endif
+	#if GAME_FEATURE_STORE_HIGHLIGHTS > 0
+	registerEnum(GAME_FEATURE_STORE_HIGHLIGHTS)
+	#endif
+	#if GAME_FEATURE_ADDITIONAL_SKILLS > 0
+	registerEnum(GAME_FEATURE_ADDITIONAL_SKILLS)
+	#endif
+	#if GAME_FEATURE_DETAILED_EXPERIENCE_BONUS > 0
+	registerEnum(GAME_FEATURE_DETAILED_EXPERIENCE_BONUS)
+	#endif
+	#if GAME_FEATURE_STORE_HIGHLIGHTS2 > 0
+	registerEnum(GAME_FEATURE_STORE_HIGHLIGHTS2)
+	#endif
+	#if GAME_FEATURE_CLIENT_SENDSERVERNAME > 0
+	registerEnum(GAME_FEATURE_CLIENT_SENDSERVERNAME)
+	#endif
+	#if GAME_FEATURE_PREY > 0
+	registerEnum(GAME_FEATURE_PREY)
+	#endif
+	#if GAME_FEATURE_IMBUING > 0
+	registerEnum(GAME_FEATURE_IMBUING)
+	#endif
+	#if GAME_FEATURE_VIP_GROUPS > 0
+	registerEnum(GAME_FEATURE_VIP_GROUPS)
+	#endif
+	#if GAME_FEATURE_INSPECTION > 0
+	registerEnum(GAME_FEATURE_INSPECTION)
+	#endif
+	#if GAME_FEATURE_PROTOCOLSEQUENCE > 0
+	registerEnum(GAME_FEATURE_PROTOCOLSEQUENCE)
+	#endif
+	#if GAME_FEATURE_BLESS_DIALOG > 0
+	registerEnum(GAME_FEATURE_BLESS_DIALOG)
+	#endif
+	#if GAME_FEATURE_QUEST_TRACKER > 0
+	registerEnum(GAME_FEATURE_QUEST_TRACKER)
+	#endif
+	#if GAME_FEATURE_GAMETIME > 0
+	registerEnum(GAME_FEATURE_GAMETIME)
+	#endif
+	#if GAME_FEATURE_COMPEDIUM > 0
+	registerEnum(GAME_FEATURE_COMPEDIUM)
+	#endif
+	#if GAME_FEATURE_PLAYERICONS_U32 > 0
+	registerEnum(GAME_FEATURE_PLAYERICONS_U32)
+	#endif
+	#if GAME_FEATURE_REWARD_WALL > 0
+	registerEnum(GAME_FEATURE_REWARD_WALL)
+	#endif
+	#if GAME_FEATURE_ANALYTICS > 0
+	registerEnum(GAME_FEATURE_ANALYTICS)
+	#endif
+	#if GAME_FEATURE_QUICK_LOOT > 0
+	registerEnum(GAME_FEATURE_QUICK_LOOT)
+	#endif
+	#if GAME_FEATURE_EXTENDED_CAPACITY > 0
+	registerEnum(GAME_FEATURE_EXTENDED_CAPACITY)
+	#endif
+	#if GAME_FEATURE_CYCLOPEDIA_MONSTERS > 0
+	registerEnum(GAME_FEATURE_CYCLOPEDIA_MONSTERS)
+	#endif
+	#if GAME_FEATURE_STASH > 0
+	registerEnum(GAME_FEATURE_STASH)
+	#endif
+	#if GAME_FEATURE_CYCLOPEDIA_MAPANDDETAILS > 0
+	registerEnum(GAME_FEATURE_CYCLOPEDIA_MAPANDDETAILS)
+	#endif
+	#if GAME_FEATURE_DOUBLE_PERCENT_SKILLS > 0
+	registerEnum(GAME_FEATURE_DOUBLE_PERCENT_SKILLS)
+	#endif
+	#if GAME_FEATURE_TOURNAMENTS > 0
+	registerEnum(GAME_FEATURE_TOURNAMENTS)
+	#endif
+	#if GAME_FEATURE_PARTY_LIST > 0
+	registerEnum(GAME_FEATURE_PARTY_LIST)
+	#endif
+	#if GAME_FEATURE_DOUBLE_HEALTH > 0
+	registerEnum(GAME_FEATURE_DOUBLE_HEALTH)
+	#endif
+	#if GAME_FEATURE_ROBINHOOD_HASH_MAP > 0
+	registerEnum(GAME_FEATURE_ROBINHOOD_HASH_MAP)
+	#endif
+	#if GAME_FEATURE_XIAOLIN_WU_SIGHT_CLEAR > 0
+	registerEnum(GAME_FEATURE_XIAOLIN_WU_SIGHT_CLEAR)
+	#endif
+
 	// Enums
 	registerEnum(CLIENT_VERSION)
 	registerEnum(NETWORKMESSAGE_PLAYERNAME_MAXLENGTH)
@@ -2012,12 +2304,19 @@ void LuaScriptInterface::registerFunctions()
 	registerEnumIn("configKeys", ConfigManager::MAX_MARKET_OFFERS_AT_A_TIME_PER_PLAYER)
 	registerEnumIn("configKeys", ConfigManager::EXP_FROM_PLAYERS_LEVEL_RANGE)
 	registerEnumIn("configKeys", ConfigManager::MAX_PACKETS_PER_SECOND)
+	registerEnumIn("configKeys", ConfigManager::COMPRESSION_LEVEL)
 	#if GAME_FEATURE_STORE > 0
 	registerEnumIn("configKeys", ConfigManager::STORE_COIN_PACKAGES)
 	#endif
 	#if GAME_FEATURE_QUEST_TRACKER > 0
 	registerEnumIn("configKeys", ConfigManager::MAX_TRACKED_QUESTS)
 	registerEnumIn("configKeys", ConfigManager::MAX_TRACKED_QUESTS_PREMIUM)
+	#endif
+	#if GAME_FEATURE_PARTY_LIST > 0
+	registerEnumIn("configKeys", ConfigManager::PARTY_LIST_MAX_DISTANCE)
+	#endif
+	#if GAME_FEATURE_STASH > 0
+	registerEnumIn("configKeys", ConfigManager::MAX_SUPPLY_STASH_STOWED_ITEMS)
 	#endif
 
 	// os
@@ -2429,6 +2728,16 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Player", "getGroup", LuaScriptInterface::luaPlayerGetGroup);
 	registerMethod("Player", "setGroup", LuaScriptInterface::luaPlayerSetGroup);
+
+	#if GAME_FEATURE_STASH > 0
+	registerMethod("Player", "isSupplyStashAvailable", LuaScriptInterface::luaPlayerIsSupplyStashAvailable);
+	registerMethod("Player", "isMarketAvailable", LuaScriptInterface::luaPlayerIsMarketAvailable);
+	registerMethod("Player", "setSpecialContainersAvailable", LuaScriptInterface::luaPlayerSetSpecialContainersAvailable);
+
+	registerMethod("Player", "getStashItemCount", LuaScriptInterface::luaPlayerGetStashItemCount);
+	registerMethod("Player", "addStashItem", LuaScriptInterface::luaPlayerAddStashItem);
+	registerMethod("Player", "removeStashItem", LuaScriptInterface::luaPlayerRemoveStashItem);
+	#endif
 
 	registerMethod("Player", "getStamina", LuaScriptInterface::luaPlayerGetStamina);
 	registerMethod("Player", "setStamina", LuaScriptInterface::luaPlayerSetStamina);
@@ -3939,9 +4248,7 @@ int LuaScriptInterface::luaAddEvent(lua_State* L)
 	eventDesc.scriptId = getScriptEnv()->getScriptId();
 
 	auto& lastTimerEventId = g_luaEnvironment.lastEventTimerId;
-	eventDesc.eventId = g_scheduler.addEvent(createSchedulerTask(
-		delay, std::bind(&LuaEnvironment::executeTimerEvent, &g_luaEnvironment, lastTimerEventId)
-	));
+	eventDesc.eventId = g_dispatcher.addEvent(delay, std::bind(&LuaEnvironment::executeTimerEvent, &g_luaEnvironment, lastTimerEventId));
 
 	g_luaEnvironment.timerEvents.emplace(lastTimerEventId, std::move(eventDesc));
 	lua_pushnumber(L, lastTimerEventId++);
@@ -3970,7 +4277,7 @@ int LuaScriptInterface::luaStopEvent(lua_State* L)
 	LuaTimerEventDesc timerEventDesc = std::move(it->second);
 	timerEvents.erase(it);
 
-	g_scheduler.stopEvent(timerEventDesc.eventId);
+	g_dispatcher.stopEvent(timerEventDesc.eventId);
 	luaL_unref(globalState, LUA_REGISTRYINDEX, timerEventDesc.function);
 
 	for (auto parameter : timerEventDesc.parameters) {
@@ -4211,7 +4518,7 @@ int LuaScriptInterface::luaDatabaseAsyncExecute(lua_State* L)
 			}
 		};
 	}
-	g_databaseTasks.addTask(getString(L, -1), callback);
+	g_databaseTasks.addTask(std::move(getString(L, -1)), callback);
 	return 0;
 }
 
@@ -4274,7 +4581,7 @@ int LuaScriptInterface::luaDatabaseAsyncStoreQuery(lua_State* L)
 			}
 		};
 	}
-	g_databaseTasks.addTask(getString(L, -1), callback, true);
+	g_databaseTasks.addTask(std::move(getString(L, -1)), callback, true);
 	return 0;
 }
 
@@ -5937,7 +6244,7 @@ int LuaScriptInterface::luaNetworkMessageAddDouble(lua_State* L)
 	double number = getNumber<double>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->addDouble(number);
+		message->addDouble<2>(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -6047,11 +6354,11 @@ int LuaScriptInterface::luaNetworkMessageSendToPlayer(lua_State* L)
 int LuaScriptInterface::luaModalWindowCreate(lua_State* L)
 {
 	// ModalWindow(id, title, message)
-	const std::string& message = getString(L, 4);
-	const std::string& title = getString(L, 3);
+	std::string message = getString(L, 4);
+	std::string title = getString(L, 3);
 	uint32_t id = getNumber<uint32_t>(L, 2);
 
-	pushUserdata<ModalWindow>(L, new ModalWindow(id, title, message));
+	pushUserdata<ModalWindow>(L, new ModalWindow(id, std::move(title), std::move(message)));
 	setMetatable(L, -1, "ModalWindow");
 	return 1;
 }
@@ -6105,10 +6412,10 @@ int LuaScriptInterface::luaModalWindowGetMessage(lua_State* L)
 int LuaScriptInterface::luaModalWindowSetTitle(lua_State* L)
 {
 	// modalWindow:setTitle(text)
-	const std::string& text = getString(L, 2);
+	std::string text = getString(L, 2);
 	ModalWindow* window = getUserdata<ModalWindow>(L, 1);
 	if (window) {
-		window->title = text;
+		window->title = std::move(text);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -6119,10 +6426,10 @@ int LuaScriptInterface::luaModalWindowSetTitle(lua_State* L)
 int LuaScriptInterface::luaModalWindowSetMessage(lua_State* L)
 {
 	// modalWindow:setMessage(text)
-	const std::string& text = getString(L, 2);
+	std::string text = getString(L, 2);
 	ModalWindow* window = getUserdata<ModalWindow>(L, 1);
 	if (window) {
-		window->message = text;
+		window->message = std::move(text);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -6157,11 +6464,12 @@ int LuaScriptInterface::luaModalWindowGetChoiceCount(lua_State* L)
 int LuaScriptInterface::luaModalWindowAddButton(lua_State* L)
 {
 	// modalWindow:addButton(id, text)
-	const std::string& text = getString(L, 3);
+	std::string text = getString(L, 3);
 	uint8_t id = getNumber<uint8_t>(L, 2);
 	ModalWindow* window = getUserdata<ModalWindow>(L, 1);
 	if (window) {
-		window->buttons.emplace_back(text, id);
+		window->buttons.emplace_back(std::move(text), id);
+		window->buttons.shrink_to_fit();
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -6172,11 +6480,12 @@ int LuaScriptInterface::luaModalWindowAddButton(lua_State* L)
 int LuaScriptInterface::luaModalWindowAddChoice(lua_State* L)
 {
 	// modalWindow:addChoice(id, text)
-	const std::string& text = getString(L, 3);
+	std::string text = getString(L, 3);
 	uint8_t id = getNumber<uint8_t>(L, 2);
 	ModalWindow* window = getUserdata<ModalWindow>(L, 1);
 	if (window) {
-		window->choices.emplace_back(text, id);
+		window->choices.emplace_back(std::move(text), id);
+		window->buttons.shrink_to_fit();
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -8174,7 +8483,7 @@ int LuaScriptInterface::luaCreatureGetDescription(lua_State* L)
 
 int LuaScriptInterface::luaCreatureGetPathTo(lua_State* L)
 {
-	// creature:getPathTo(pos[, minTargetDist = 0[, maxTargetDist = 1[, fullPathSearch = true[, clearSight = true[, maxSearchDist = 0]]]]])
+	// creature:getPathTo(pos[, minTargetDist = 0[, maxTargetDist = 1[, fullPathSearch = true[, clearSight = false[, maxSearchDist = 0]]]]])
 	Creature* creature = getUserdata<Creature>(L, 1);
 	if (!creature) {
 		lua_pushnil(L);
@@ -9143,10 +9452,10 @@ int LuaScriptInterface::luaPlayerGetGuildNick(lua_State* L)
 int LuaScriptInterface::luaPlayerSetGuildNick(lua_State* L)
 {
 	// player:setGuildNick(nick)
-	const std::string& nick = getString(L, 2);
+	std::string nick = getString(L, 2);
 	Player* player = getUserdata<Player>(L, 1);
 	if (player) {
-		player->setGuildNick(nick);
+		player->setGuildNick(std::move(nick));
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -9185,6 +9494,90 @@ int LuaScriptInterface::luaPlayerSetGroup(lua_State* L)
 	}
 	return 1;
 }
+
+#if GAME_FEATURE_STASH > 0
+int LuaScriptInterface::luaPlayerIsSupplyStashAvailable(lua_State* L)
+{
+	// player:isSupplyStashAvailable()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushboolean(L, player->isSupplyStashAvailable());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerIsMarketAvailable(lua_State* L)
+{
+	// player:isMarketAvailable()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushboolean(L, player->isMarketAvailable());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSetSpecialContainersAvailable(lua_State* L)
+{
+	// player:setSpecialContainersAvailable(supplyStashAvailable, marketAvailable)
+	bool marketAvailable = getBoolean(L, 3);
+	bool supplyStashAvailable = getBoolean(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		player->setSupplyStashAvailable(supplyStashAvailable);
+		player->setMarketAvailable(marketAvailable);
+		player->sendSpecialContainersAvailable(supplyStashAvailable, marketAvailable);
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetStashItemCount(lua_State* L)
+{
+	// player:getStashItemCount(itemId)
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushnumber(L, player->getStashItemCount(itemId));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddStashItem(lua_State* L)
+{
+	// player:addStashItem(itemId, itemCount)
+	uint32_t itemCount = getNumber<uint32_t>(L, 2);
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		pushBoolean(L, player->addStashItem(itemId, itemCount));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerRemoveStashItem(lua_State* L)
+{
+	// player:removeStashItem(itemId, itemCount)
+	uint32_t itemCount = getNumber<uint32_t>(L, 2);
+	uint16_t itemId = getNumber<uint16_t>(L, 2);
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		pushBoolean(L, player->removeStashItem(itemId, itemCount));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+#endif
 
 int LuaScriptInterface::luaPlayerGetStamina(lua_State* L)
 {
@@ -9310,9 +9703,9 @@ int LuaScriptInterface::luaPlayerSetStorageValue(lua_State* L)
 	uint32_t key = getNumber<uint32_t>(L, 2);
 	Player* player = getUserdata<Player>(L, 1);
 	if (IS_IN_KEYRANGE(key, RESERVED_RANGE)) {
-		std::ostringstream ss;
+		std::stringExtended ss(64);
 		ss << "Accessing reserved range: " << key;
-		reportErrorFunc(ss.str());
+		reportErrorFunc(ss);
 		pushBoolean(L, false);
 		return 1;
 	}
@@ -15920,6 +16313,7 @@ int LuaScriptInterface::luaCreateWeapon(lua_State* L)
 				pushUserdata<WeaponMelee>(L, weapon);
 				setMetatable(L, -1, "Weapon");
 				weapon->weaponType = type;
+				weapon->fromLua = true;
 			} else {
 				lua_pushnil(L);
 			}
@@ -15932,6 +16326,7 @@ int LuaScriptInterface::luaCreateWeapon(lua_State* L)
 				pushUserdata<WeaponDistance>(L, weapon);
 				setMetatable(L, -1, "Weapon");
 				weapon->weaponType = type;
+				weapon->fromLua = true;
 			} else {
 				lua_pushnil(L);
 			}
@@ -15943,6 +16338,7 @@ int LuaScriptInterface::luaCreateWeapon(lua_State* L)
 				pushUserdata<WeaponWand>(L, weapon);
 				setMetatable(L, -1, "Weapon");
 				weapon->weaponType = type;
+				weapon->fromLua = true;
 			} else {
 				lua_pushnil(L);
 			}

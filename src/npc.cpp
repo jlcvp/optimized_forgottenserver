@@ -240,9 +240,8 @@ bool Npc::canSee(const Position& pos) const
 
 std::string Npc::getDescription(int32_t) const
 {
-	std::string str;
-	str.reserve(name.length() + static_cast<size_t>(2));
-	return str.append(name).append(1, '.');
+	std::stringExtended str(name.length() + static_cast<size_t>(2));
+	return (str << name << '.');
 }
 
 void Npc::onCreatureAppear(Creature* creature, bool isLogin)
@@ -487,7 +486,7 @@ bool Npc::getRandomStep(Direction& dir) const
 void Npc::doMoveTo(const Position& pos)
 {
 	std::vector<Direction> listDir;
-	if (getPathTo(pos, listDir, 1, 1, true, true)) {
+	if (getPathTo(pos, listDir, 1, 1, true, false)) {
 		startAutoWalk(listDir);
 	}
 }
@@ -796,6 +795,12 @@ int NpcScriptInterface::luaOpenShopWindow(lua_State* L)
 	}
 
 	std::vector<ShopInfo> items;
+	#if LUA_VERSION_NUM >= 502
+	items.reserve(lua_rawlen(L, -1));
+	#else
+	items.reserve(lua_objlen(L, -1));
+	#endif
+
 	lua_pushnil(L);
 	while (lua_next(L, -2) != 0) {
 		const auto tableIndex = lua_gettop(L);
@@ -1020,6 +1025,12 @@ int NpcScriptInterface::luaNpcOpenShopWindow(lua_State* L)
 	}
 
 	std::vector<ShopInfo> items;
+	#if LUA_VERSION_NUM >= 502
+	items.reserve(lua_rawlen(L, 3));
+	#else
+	items.reserve(lua_objlen(L, 3));
+	#endif
+
 	lua_pushnil(L);
 	while (lua_next(L, 3) != 0) {
 		const auto tableIndex = lua_gettop(L);

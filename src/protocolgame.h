@@ -79,9 +79,9 @@ class ProtocolGame final : public Protocol
 		explicit ProtocolGame(Connection_ptr connection) : Protocol(connection) {}
 
 		#if GAME_FEATURE_SESSIONKEY > 0
-		void login(const std::string accountName, const std::string password, std::string characterName, std::string token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
+		void login(const std::string& accountName, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
 		#else
-		void login(const std::string accountName, const std::string password, std::string characterName, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
+		void login(const std::string& accountName, const std::string& password, std::string& characterName, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
 		#endif
 		void logout(bool displayEffect, bool forced);
 
@@ -209,6 +209,11 @@ class ProtocolGame final : public Protocol
 		void parseOpenPrivateChannel(NetworkMessage& msg);
 		void parseCloseChannel(NetworkMessage& msg);
 
+		#if GAME_FEATURE_STASH > 0
+		//Stash Actions
+		void parseStashAction(NetworkMessage& msg);
+		#endif
+
 		//Send functions
 		#if GAME_FEATURE_INSPECTION > 0
 		void sendItemInspection(uint16_t itemId, uint8_t itemCount, const Item* item, bool cyclopedia);
@@ -334,6 +339,10 @@ class ProtocolGame final : public Protocol
 		void sendWorldLight(LightInfo lightInfo);
 		#if CLIENT_VERSION >= 1121
 		void sendTibiaTime(int32_t time);
+		#endif
+		#if GAME_FEATURE_STASH > 0
+		void sendSupplyStash(std::map<uint16_t, uint32_t>& supplyStashItems);
+		void sendSpecialContainersAvailable(bool supplyStashAvailable, bool marketAvailable);
 		#endif
 
 		void sendCreatureSquare(const Creature* creature, SquareColor_t color);

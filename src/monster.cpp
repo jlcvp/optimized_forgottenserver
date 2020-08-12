@@ -87,9 +87,8 @@ bool Monster::canSee(const Position& pos) const
 
 std::string Monster::getDescription(int32_t) const
 {
-	std::string str;
-	str.reserve(strDescription.length() + static_cast<size_t>(2));
-	return str.append(strDescription).append(1, '.');
+	std::stringExtended str(strDescription.length() + static_cast<size_t>(2));
+	return (str << strDescription << '.');
 }
 
 bool Monster::canWalkOnFieldType(CombatType_t combatType) const
@@ -1009,11 +1008,11 @@ bool Monster::pushItem(Item* item)
 {
 	const Position& centerPos = item->getPosition();
 
-	static std::vector<std::pair<int32_t, int32_t>> relList {
+	static std::array<std::pair<int32_t, int32_t>, 8> relList { {
 		{-1, -1}, {0, -1}, {1, -1},
 		{-1,  0},          {1,  0},
 		{-1,  1}, {0,  1}, {1,  1}
-	};
+	} };
 
 	std::shuffle(relList.begin(), relList.end(), getRandomGenerator());
 
@@ -1060,7 +1059,7 @@ void Monster::pushItems(Tile* tile)
 
 bool Monster::pushCreature(Creature* creature)
 {
-	static std::vector<Direction> dirList {
+	static std::array<Direction, 4> dirList {
 			DIRECTION_NORTH,
 		DIRECTION_WEST, DIRECTION_EAST,
 			DIRECTION_SOUTH
@@ -1164,7 +1163,7 @@ bool Monster::getNextStep(Direction& direction, uint32_t& flags)
 
 bool Monster::getRandomStep(const Position& creaturePos, Direction& direction) const
 {
-	static std::vector<Direction> dirList{
+	static std::array<Direction, 4> dirList{
 			DIRECTION_NORTH,
 		DIRECTION_WEST, DIRECTION_EAST,
 			DIRECTION_SOUTH
@@ -1966,10 +1965,14 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 
 	fpp.minTargetDist = 1;
 	fpp.maxTargetDist = mType->info.targetDistance;
+	if (fpp.maxTargetDist > 1) {
+		fpp.clearSight = true;
+	}
 
 	if (isSummon()) {
 		if (getMaster() == creature) {
 			fpp.maxTargetDist = 2;
+			fpp.clearSight = true;
 			fpp.fullPathSearch = true;
 		} else if (mType->info.targetDistance <= 1) {
 			fpp.fullPathSearch = true;

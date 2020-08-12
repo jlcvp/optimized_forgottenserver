@@ -25,7 +25,7 @@
 #include "connection.h"
 #include "outputmessage.h"
 #include "protocol.h"
-#include "scheduler.h"
+#include "tasks.h"
 #include "server.h"
 
 extern ConfigManager g_config;
@@ -187,7 +187,7 @@ void Connection::parseProxyIdentification(const boost::system::error_code& error
 			}
 		}
 	} else if (connectionState == CONNECTION_STATE_READINGS) {
-		size_t remainder = serverName.length()-2;
+		size_t remainder = serverName.length() - 2;
 		if (strncasecmp(reinterpret_cast<char*>(msgBuffer), &serverName[2], remainder) == 0) {
 			connectionState = CONNECTION_STATE_OPEN;
 		} else {
